@@ -84,7 +84,7 @@ def crawl_data_from_RTE():
     for i in forecast_df_list:
         main_df = main_df.merge(i, how='left', on='datetime')
     
-    main_df.to_csv("combined_energy_data.csv", index=False)
+    main_df.to_csv("gs://ai4impact-hkdragons/combined_energy_data.csv", index=False)
 
 while True:
     crawl_data_from_RTE()
