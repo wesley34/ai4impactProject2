@@ -5,6 +5,7 @@ import pandas as pd
 import requests
 import pytz, datetime
 import time
+import os 
 
 from googletrans import Translator
 translator = Translator()
@@ -84,8 +85,15 @@ def crawl_data_from_RTE():
     for i in forecast_df_list:
         main_df = main_df.merge(i, how='left', on='datetime')
     
-    main_df.to_csv("gs://ai4impact-hkdragons/combined_energy_data.csv", index=False)
+    main_df.to_csv("combined_energy_data.csv", index=False)
 
-while True:
-    crawl_data_from_RTE()
-    time.sleep(3600)
+    os.system('gsutil cp combined_energy_data.csv gs://ai4impact-hkdragons')
+
+    print("finished crawling and export to gcs")
+
+if __name__=="__main__":
+
+    while True:
+        crawl_data_from_RTE()
+        for i in range(3600):
+            time.sleep(1)
