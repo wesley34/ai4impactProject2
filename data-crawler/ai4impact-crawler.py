@@ -50,8 +50,11 @@ def crawl_data_from_RTE():
     translated_columns = [translator.translate(i, src='fr', dest='en').text for i in df.columns]
     df.columns = translated_columns
 
-    #consider all datetime is in summer time of france
-    df['datetime'] = pd.to_datetime(df['Dated'] + " " + df['Hours']) - datetime.timedelta(hours=2)
+    local = pytz.timezone ("Europe/Paris")
+
+    df['datetime'] = df['Dated'] + " " + df['Hours']
+
+    df['datetime'] = df['datetime'].apply(lambda x: local.localize(datetime.datetime.strptime(x, "%Y-%m-%d %H:%M"), is_dst=True).astimezone(pytz.utc))
 
     wf_list = ["guitrancourt", "lieusaint", "lvs-pussay", "parc-du-gatinais", "arville", "boissy-la-riviere", "angerville-1", "angerville-2",
     "guitrancourt-b", "lieusaint-b", "lvs-pussay-b", "parc-du-gatinais-b", "arville-b", "boissy-la-riviere-b", "angerville-1-b", "angerville-2-b"]
