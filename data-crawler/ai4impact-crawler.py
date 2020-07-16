@@ -77,7 +77,7 @@ def crawl_data_from_RTE():
         
         tmp_df = pd.concat([hist_tmp_df,current_tmp_df]).reset_index(drop=True).rename(columns={'Speed(m/s)':forecast + '_Speed(m/s)', 'Direction (deg N)':forecast + '_Direction (deg N)'})
         
-        tmp_df['datetime'] = pd.to_datetime(tmp_df['Time'].str.replace("UTC", ""), utc = True))
+        tmp_df['datetime'] = pd.to_datetime(tmp_df['Time'].str.replace("UTC", ""), utc = True)
         
         tmp_df = tmp_df.drop(columns=['Time'])
         
