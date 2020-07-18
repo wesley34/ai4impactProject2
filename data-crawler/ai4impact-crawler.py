@@ -11,23 +11,13 @@ from googletrans import Translator
 translator = Translator()
 
 def crawl_data_from_RTE():
-    required_columns = ['Périmètre', 'Nature', 'Date', 'Heures', 'Consommation',
-        'Prévision J-1', 'Prévision J', 'Fioul', 'Charbon', 'Gaz', 'Nucléaire',
-        'Eolien', 'Solaire', 'Hydraulique', 'Pompage', 'Bioénergies',
-        'Ech. physiques', 'Taux de Co2', 'Ech. comm. Angleterre',
-        'Ech. comm. Espagne', 'Ech. comm. Italie', 'Ech. comm. Suisse',
-        'Ech. comm. Allemagne-Belgique', 'Fioul - TAC', 'Fioul - Cogén.',
-        'Fioul - Autres', 'Gaz - TAC', 'Gaz - Cogén.', 'Gaz - CCG',
-        'Gaz - Autres', 'Hydraulique - Fil de l?eau + éclusée',
-        'Hydraulique - Lacs', 'Hydraulique - STEP turbinage',
-        'Bioénergies - Déchets', 'Bioénergies - Biomasse',
-        'Bioénergies - Biogaz']
 
-    url_list = ["https://eco2mix.rte-france.com/download/eco2mix/eCO2mix_RTE_Annuel-Definitif_2017.zip",
-                "https://eco2mix.rte-france.com/download/eco2mix/eCO2mix_RTE_Annuel-Definitif_2018.zip",
-                "https://eco2mix.rte-france.com/download/eco2mix/eCO2mix_RTE_En-cours-Consolide.zip",
-            "https://eco2mix.rte-france.com/download/eco2mix/eCO2mix_RTE_En-cours-TR.zip"]
+    required_columns = ['Périmètre', 'Nature', 'Date', 'Heures', 'Consommation', 'Thermique','Eolien', 'Solaire', 'Hydraulique','Bioénergies', 'Ech. physiques']
 
+    url_list = ["https://eco2mix.rte-france.com/download/eco2mix/eCO2mix_RTE_Ile-de-France_Annuel-Definitif_2017.zip",
+                "https://eco2mix.rte-france.com/download/eco2mix/eCO2mix_RTE_Ile-de-France_Annuel-Definitif_2018.zip",
+                "https://eco2mix.rte-france.com/download/eco2mix/eCO2mix_RTE_Ile-de-France_En-cours-Consolide.zip",
+            "https://eco2mix.rte-france.com/download/eco2mix/eCO2mix_RTE_Ile-de-France_En-cours-TR.zip"]
 
     df_list = []
 
@@ -50,8 +40,20 @@ def crawl_data_from_RTE():
     translated_columns = [translator.translate(i, src='fr', dest='en').text for i in df.columns]
     df.columns = translated_columns
 
-    #consider all datetime is in summer time of france
-    df['datetime'] = pd.to_datetime(df['Dated'] + " " + df['Hours']) - datetime.timedelta(hours=2)
+    local = pytz.timezone ("Europe/Paris")
+
+    df['datetime'] = df['Dated'] + " " + df['Hours']
+
+    df['datetime'] = df['datetime'].apply(lambda x: local.localize(datetime.datetime.strptime(x, "%Y-%m-%d %H:%M"), is_dst=True).astimezone(pytz.utc))
+
+    df = df.drop_duplicates(subset=['datetime'])
+    df['datetime'] = df['datetime'].astype(str).apply(lambda x: x.split("+")[0])
+    df['datetime'] = pd.to_datetime(df['datetime'])
+
+    df = df[df['Consumption'] != "ND"]
+
+    for i in ['Consumption', 'Thermal', 'Wind', 'Solar', 'Hydraulic', 'Bioenergies','Ech. physical']:
+        df[i] = pd.to_numeric(df[i]) * 250
 
     wf_list = ["guitrancourt", "lieusaint", "lvs-pussay", "parc-du-gatinais", "arville", "boissy-la-riviere", "angerville-1", "angerville-2",
     "guitrancourt-b", "lieusaint-b", "lvs-pussay-b", "parc-du-gatinais-b", "arville-b", "boissy-la-riviere-b", "angerville-1-b", "angerville-2-b"]
