@@ -257,8 +257,8 @@ def predict_and_submitt():
         print("prediction not done")
 
 
-schedule.every(10).minutes.do(crawl_data_from_RTE)
-schedule.every(10).minutes.do(predict_and_submitt)
+schedule.every(1).minutes.do(crawl_data_from_RTE)
+schedule.every(1).minutes.do(predict_and_submitt)
 
 while 1:
     schedule.run_pending()
