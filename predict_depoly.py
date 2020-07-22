@@ -33,7 +33,7 @@ import datetime
 
 def crawl_data_from_RTE():
 
-    required_columns = ['Périmètre', 'Nature', 'Date', 'Heures', 'Consommation', 'Thermique','Eolien', 'Solaire', 'Hydraulique','Bioénergies', 'Ech. physiques']
+    required_columns = ['Périmètre', 'Nature', 'Date', 'Heures', 'Consommation', 'Thermique','Eolien']
 
     url_list = ["https://eco2mix.rte-france.com/download/eco2mix/eCO2mix_RTE_Ile-de-France_Annuel-Definitif_2017.zip",
                 "https://eco2mix.rte-france.com/download/eco2mix/eCO2mix_RTE_Ile-de-France_Annuel-Definitif_2018.zip",
@@ -148,7 +148,7 @@ def series_to_supervised(data, window=1, lag=1, dropnan=True):
     return agg
 
 
-def predict_and_submitt():
+def predict_and_submit():
     data = pd.read_csv("combined_energy_data.csv", low_memory=False)
     data = data.drop_duplicates(subset=['datetime'])
     data['datetime'] = data['datetime'].apply(lambda x: x.split("+")[0])
@@ -257,9 +257,18 @@ def predict_and_submitt():
         print("prediction not done")
 
 
-schedule.every(1).minutes.do(crawl_data_from_RTE)
-schedule.every(1).minutes.do(predict_and_submitt)
+#schedule.every(1).minutes.do(crawl_data_from_RTE)
+#schedule.every(1).minutes.do(predict_and_submitt)
 
 while 1:
-    schedule.run_pending()
+    #schedule.run_pending()
+    try:
+        crawl_data_from_RTE()
+    except:
+        pass
+    try:
+        predict_and_submit()
+    except:
+        pass
+
     time.sleep(1)
